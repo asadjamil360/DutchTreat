@@ -20,7 +20,7 @@ webpackEmptyAsyncContext.id = "./ClientApp/$$_lazy_route_resource lazy recursive
 /***/ "./ClientApp/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"row\">\r\n    <div class=\"col-md-9\">\r\n        <h3>{{ title }}</h3>\r\n        <product-list></product-list>\r\n    </div>\r\n    <div class=\"col-md-3\">\r\n        <div class=\"well well-sm\"><h3>Cart</h3></div>\r\n    </div>\r\n</div>"
+module.exports = "<div class=\"row\">\r\n    <div class=\"col-md-9\">\r\n        <h3>{{ title }}</h3>\r\n        <product-list></product-list>\r\n    </div>\r\n    <div class=\"col-md-3\">\r\n        <div class=\"well well-sm\">\r\n            <the-cart></the-cart>\r\n        </div>\r\n    </div>\r\n</div>"
 
 /***/ }),
 
@@ -71,6 +71,9 @@ var platform_browser_1 = __webpack_require__("./node_modules/@angular/platform-b
 var core_1 = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
 var app_component_1 = __webpack_require__("./ClientApp/app/app.component.ts");
 var productList_component_1 = __webpack_require__("./ClientApp/app/shop/productList.component.ts");
+var dataService_1 = __webpack_require__("./ClientApp/app/shared/dataService.ts");
+var http_1 = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
+var cart_component_1 = __webpack_require__("./ClientApp/app/shop/cart.component.ts");
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -78,12 +81,16 @@ var AppModule = /** @class */ (function () {
         core_1.NgModule({
             declarations: [
                 productList_component_1.ProductList,
-                app_component_1.AppComponent
+                app_component_1.AppComponent,
+                cart_component_1.Cart
             ],
             imports: [
-                platform_browser_1.BrowserModule
+                platform_browser_1.BrowserModule,
+                http_1.HttpClientModule
             ],
-            providers: [],
+            providers: [
+                dataService_1.DataService
+            ],
             bootstrap: [app_component_1.AppComponent]
         })
     ], AppModule);
@@ -94,10 +101,140 @@ exports.AppModule = AppModule;
 
 /***/ }),
 
+/***/ "./ClientApp/app/shared/dataService.ts":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var http_1 = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
+var core_1 = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
+__webpack_require__("./node_modules/rxjs/_esm5/add/operator/map.js");
+var order_1 = __webpack_require__("./ClientApp/app/shared/order.ts");
+var DataService = /** @class */ (function () {
+    function DataService(http) {
+        this.http = http;
+        this.order = new order_1.Order();
+        this.products = [];
+    }
+    DataService.prototype.loadProducts = function () {
+        var _this = this;
+        return this.http.get("/api/products")
+            .map(function (data) {
+            _this.products = data;
+            return true;
+        });
+    };
+    DataService.prototype.addToOrder = function (newProduct) {
+        var item = new order_1.OrderItem();
+        item.productId = newProduct.id;
+        item.productArtist = newProduct.artist;
+        item.productArtId = newProduct.artId;
+        item.productCategory = newProduct.category;
+        item.productSize = newProduct.size;
+        item.productTitle = newProduct.title;
+        item.unitPrice = newProduct.price;
+        item.quantity = 1;
+        this.order.items.push(item);
+    };
+    DataService = __decorate([
+        core_1.Injectable(),
+        __metadata("design:paramtypes", [http_1.HttpClient])
+    ], DataService);
+    return DataService;
+}());
+exports.DataService = DataService;
+
+
+/***/ }),
+
+/***/ "./ClientApp/app/shared/order.ts":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Order = /** @class */ (function () {
+    function Order() {
+        this.orderDate = new Date();
+        this.items = new Array();
+    }
+    return Order;
+}());
+exports.Order = Order;
+var OrderItem = /** @class */ (function () {
+    function OrderItem() {
+    }
+    return OrderItem;
+}());
+exports.OrderItem = OrderItem;
+
+
+/***/ }),
+
+/***/ "./ClientApp/app/shop/cart.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<h3>Shopping Cart</h3>\r\n<div>Count: {{ data.order.items.length }}</div>"
+
+/***/ }),
+
+/***/ "./ClientApp/app/shop/cart.component.ts":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
+var dataService_1 = __webpack_require__("./ClientApp/app/shared/dataService.ts");
+var Cart = /** @class */ (function () {
+    function Cart(data) {
+        this.data = data;
+    }
+    Cart = __decorate([
+        core_1.Component({
+            selector: "the-cart",
+            template: __webpack_require__("./ClientApp/app/shop/cart.component.html"),
+            styleUrls: []
+        }),
+        __metadata("design:paramtypes", [dataService_1.DataService])
+    ], Cart);
+    return Cart;
+}());
+exports.Cart = Cart;
+
+
+/***/ }),
+
+/***/ "./ClientApp/app/shop/productList.component.css":
+/***/ (function(module, exports) {
+
+module.exports = ".product-info img {\r\n    max-width: 100px;\r\n    float: left;\r\n    margin: 0 2px;\r\n    border: solid 1px black;\r\n}\r\n\r\n.product-info .product-name {\r\n    font-size: large;\r\n    font-weight: bold;\r\n}"
+
+/***/ }),
+
 /***/ "./ClientApp/app/shop/productList.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"row\">\r\n    <ul>\r\n        <li *ngFor=\"let p of products\">\r\n            {{ p.title }}: {{ p.price | currency:\"USD\":true}}\r\n        </li>\r\n    </ul>\r\n</div>"
+module.exports = "<div class=\"row\">\r\n    <div *ngFor=\"let p of products\" class=\"product-info col-md-4 well well-sm\">\r\n        <img src=\"/img/{{ p.artId }}.jpg\" class=\"img-responsive\" [alt]=\"p.title\" />\r\n        <div class=\"product-name\">{{ p.category }} - {{ p.size }}</div>\r\n            <div><strong>Price:</strong> {{ p.price | currency:\"USD\":\"symbol\" }}</div>\r\n            <div><strong>Artist:</strong> {{ p.artist }}</div>\r\n            <div><strong>Title:</strong> {{ p.title }}</div>\r\n            <div><strong>Description:</strong> {{ p.artDescription }}</div>\r\n        <button id=\"buyButton\" class=\"btn btn-success btn-sm pull-right\" (click)=\"addProduct(p)\" >Buy</button>\r\n    </div>\r\n</div>"
 
 /***/ }),
 
@@ -112,27 +249,36 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
+var dataService_1 = __webpack_require__("./ClientApp/app/shared/dataService.ts");
 var ProductList = /** @class */ (function () {
-    function ProductList() {
-        this.products = [{
-                title: "First Product",
-                price: 19.99
-            }, {
-                title: "Second Product",
-                price: 9.99
-            }, {
-                title: "Third Product",
-                price: 15.99
-            }];
+    function ProductList(data) {
+        this.data = data;
+        this.products = [];
     }
+    ProductList.prototype.ngOnInit = function () {
+        var _this = this;
+        this.data.loadProducts()
+            .subscribe(function (success) {
+            if (success) {
+                _this.products = _this.data.products;
+            }
+        });
+    };
+    ProductList.prototype.addProduct = function (product) {
+        this.data.addToOrder(product);
+    };
     ProductList = __decorate([
         core_1.Component({
             selector: "product-list",
             template: __webpack_require__("./ClientApp/app/shop/productList.component.html"),
-            styleUrls: []
-        })
+            styles: [__webpack_require__("./ClientApp/app/shop/productList.component.css")]
+        }),
+        __metadata("design:paramtypes", [dataService_1.DataService])
     ], ProductList);
     return ProductList;
 }());
